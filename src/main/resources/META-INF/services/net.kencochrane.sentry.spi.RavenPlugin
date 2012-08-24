@@ -1,1 +1,2 @@
 com.bradchen.raven.servlet.RavenServletPlugin
+com.bradchen.raven.servlet.RavenSpringSecurityPlugin

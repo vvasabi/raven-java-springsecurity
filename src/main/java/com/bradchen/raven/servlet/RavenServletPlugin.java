@@ -24,8 +24,7 @@ public class RavenServletPlugin implements RavenPlugin {
 	public static final String MDC_REQUEST
 		= RavenServletPlugin.class.getName() + ".httpServletRequest";
 
-	private static final String KEY_HTTP_OBJECT
-		= RavenServletPlugin.class.getName() + ".http";
+	private static final String HTTP_INTERFACE = "sentry.interfaces.Http";
 
 	@Override
 	public void preProcessEvent(RavenEvent event) {
@@ -34,7 +33,8 @@ public class RavenServletPlugin implements RavenPlugin {
 			// no request available; do nothing
 			return;
 		}
-		event.putData(KEY_HTTP_OBJECT, buildHttpObject(request));
+
+		event.putData(HTTP_INTERFACE, buildHttpObject(request));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -96,14 +96,13 @@ public class RavenServletPlugin implements RavenPlugin {
 	@Override
 	@SuppressWarnings("unchecked")
 	public void postProcessRequestJSON(RavenEvent event, JSONObject json) {
-		JSONObject http = (JSONObject)event.getData(KEY_HTTP_OBJECT);
+		JSONObject http = (JSONObject)event.getData(HTTP_INTERFACE);
 		if (http == null) {
 			// no http object available; do nothing
 			return;
 		}
 
-		// build Http object
-		json.put("sentry.interfaces.Http", http);
+		json.put(HTTP_INTERFACE, http);
 	}
 
 }
