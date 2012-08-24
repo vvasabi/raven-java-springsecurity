@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.MDC;
 import org.json.simple.JSONObject;
 
-import net.kencochrane.sentry.spi.Log;
+import net.kencochrane.sentry.spi.RavenEvent;
 import net.kencochrane.sentry.spi.RavenPlugin;
 
 /**
@@ -28,13 +28,13 @@ public class RavenServletPlugin implements RavenPlugin {
 		= RavenServletPlugin.class.getName() + ".http";
 
 	@Override
-	public void preProcessLog(Log log) {
+	public void preProcessEvent(RavenEvent event) {
 		HttpServletRequest request = (HttpServletRequest)MDC.get(MDC_REQUEST);
 		if (request == null) {
 			// no request available; do nothing
 			return;
 		}
-		log.putExtra(KEY_HTTP_OBJECT, buildHttpObject(request));
+		event.putData(KEY_HTTP_OBJECT, buildHttpObject(request));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -95,8 +95,8 @@ public class RavenServletPlugin implements RavenPlugin {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void postProcessRequestJSON(Log log, JSONObject json) {
-		JSONObject http = (JSONObject)log.getExtra(KEY_HTTP_OBJECT);
+	public void postProcessRequestJSON(RavenEvent event, JSONObject json) {
+		JSONObject http = (JSONObject)event.getData(KEY_HTTP_OBJECT);
 		if (http == null) {
 			// no http object available; do nothing
 			return;
