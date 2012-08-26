@@ -8,33 +8,34 @@ import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.MDC;
 import org.json.simple.JSONObject;
 
-import net.kencochrane.sentry.spi.RavenEvent;
-import net.kencochrane.sentry.spi.RavenPlugin;
+import net.kencochrane.raven.spi.RequestProcessor;
+import net.kencochrane.raven.spi.RavenMDC;
 
 /**
  * A Raven plugin that adds HTTP request information to the log when available.
  *
  * @author vvasabi
  */
-public class RavenServletPlugin implements RavenPlugin {
+public class ServletRequestProcessor implements RequestProcessor {
 
 	public static final String MDC_REQUEST
-		= RavenServletPlugin.class.getName() + ".httpServletRequest";
+			= ServletRequestProcessor.class.getName() + ".httpServletRequest";
 
 	private static final String HTTP_INTERFACE = "sentry.interfaces.Http";
 
 	@Override
-	public void preProcessEvent(RavenEvent event) {
-		HttpServletRequest request = (HttpServletRequest)MDC.get(MDC_REQUEST);
+	@SuppressWarnings("unchecked")
+	public void process(JSONObject json) {
+		RavenMDC mdc = RavenMDC.getInstance();
+		HttpServletRequest request = (HttpServletRequest)mdc.get(MDC_REQUEST);
 		if (request == null) {
 			// no request available; do nothing
 			return;
 		}
 
-		event.putData(HTTP_INTERFACE, buildHttpObject(request));
+		json.put(HTTP_INTERFACE, buildHttpObject(request));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -91,18 +92,6 @@ public class RavenServletPlugin implements RavenPlugin {
 		env.put("SERVER_PORT", request.getServerPort());
 		env.put("SERVER_PROTOCOL", request.getProtocol());
 		return env;
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public void postProcessRequestJSON(RavenEvent event, JSONObject json) {
-		JSONObject http = (JSONObject)event.getData(HTTP_INTERFACE);
-		if (http == null) {
-			// no http object available; do nothing
-			return;
-		}
-
-		json.put(HTTP_INTERFACE, http);
 	}
 
 }

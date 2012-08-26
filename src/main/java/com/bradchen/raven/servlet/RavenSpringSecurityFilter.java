@@ -9,7 +9,8 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.apache.log4j.MDC;
+import net.kencochrane.raven.spi.RavenMDC;
+
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -24,9 +25,10 @@ public class RavenSpringSecurityFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response,
 			FilterChain chain) throws IOException, ServletException {
 		SecurityContext context = SecurityContextHolder.getContext();
-		MDC.put(RavenSpringSecurityPlugin.MDC_SECURITY_CONTEXT, context);
+		RavenMDC mdc = RavenMDC.getInstance();
+		mdc.put(SpringSecurityRequestProcessor.MDC_SECURITY_CONTEXT, context);
 		chain.doFilter(request, response);
-		MDC.remove(RavenSpringSecurityPlugin.MDC_SECURITY_CONTEXT);
+		mdc.remove(SpringSecurityRequestProcessor.MDC_SECURITY_CONTEXT);
 	}
 
 	@Override

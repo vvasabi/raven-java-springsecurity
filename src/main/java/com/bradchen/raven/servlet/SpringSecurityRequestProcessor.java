@@ -1,6 +1,5 @@
 package com.bradchen.raven.servlet;
 
-import org.apache.log4j.MDC;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -9,25 +8,27 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import net.kencochrane.sentry.spi.RavenEvent;
-import net.kencochrane.sentry.spi.RavenPlugin;
+import net.kencochrane.raven.spi.RavenMDC;
+import net.kencochrane.raven.spi.RequestProcessor;
 
-public class RavenSpringSecurityPlugin implements RavenPlugin {
+public class SpringSecurityRequestProcessor implements RequestProcessor {
 
 	public static final String MDC_SECURITY_CONTEXT
-		= RavenSpringSecurityPlugin.class.getName() + ".securityContext";
+			= SpringSecurityRequestProcessor.class.getName() + ".securityContext";
 
 	private static final String USER_INTERFACE = "sentry.interfaces.User";
 
 	@Override
-	public void preProcessEvent(RavenEvent event) {
-		SecurityContext context = (SecurityContext)MDC.get(MDC_SECURITY_CONTEXT);
+	@SuppressWarnings("unchecked")
+	public void process(JSONObject json) {
+		RavenMDC mdc = RavenMDC.getInstance();
+		SecurityContext context = (SecurityContext)mdc.get(MDC_SECURITY_CONTEXT);
 		if ((context == null) || (context.getAuthentication() == null)) {
 			// no security context available; do nothing
 			return;
 		}
 
-		event.putData(USER_INTERFACE, buildUserObject(context));
+		json.put(USER_INTERFACE, buildUserObject(context));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -65,18 +66,6 @@ public class RavenSpringSecurityPlugin implements RavenPlugin {
 		user.put("authorities", authorities);
 
 		return user;
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public void postProcessRequestJSON(RavenEvent event, JSONObject json) {
-		JSONObject user = (JSONObject)event.getData(USER_INTERFACE);
-		if (user == null) {
-			// no user object available; do nothing
-			return;
-		}
-
-		json.put(USER_INTERFACE, user);
 	}
 
 }
