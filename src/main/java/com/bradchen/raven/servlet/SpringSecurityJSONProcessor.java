@@ -9,12 +9,17 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import net.kencochrane.raven.spi.RavenMDC;
-import net.kencochrane.raven.spi.RequestProcessor;
+import net.kencochrane.raven.spi.JSONProcessor;
 
-public class SpringSecurityRequestProcessor implements RequestProcessor {
+/**
+ * Add user information to logs when logs are created on HTTP request threads.
+ *
+ * @author vvasabi
+ */
+public class SpringSecurityJSONProcessor implements JSONProcessor {
 
 	public static final String MDC_SECURITY_CONTEXT
-			= SpringSecurityRequestProcessor.class.getName() + ".securityContext";
+			= SpringSecurityJSONProcessor.class.getName() + ".securityContext";
 
 	private static final String USER_INTERFACE = "sentry.interfaces.User";
 

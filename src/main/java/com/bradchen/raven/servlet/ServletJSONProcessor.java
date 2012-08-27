@@ -1,7 +1,5 @@
 package com.bradchen.raven.servlet;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -10,19 +8,19 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONObject;
 
-import net.kencochrane.raven.spi.RequestProcessor;
+import net.kencochrane.raven.spi.JSONProcessor;
 import net.kencochrane.raven.spi.RavenMDC;
 
 /**
- * A Raven plugin that adds HTTP request information to the log when available.
+ * Add HTTP request information to logs when logs are created on HTTP request
+ * threads.
  *
  * @author vvasabi
  */
-public class ServletRequestProcessor implements RequestProcessor {
+public class ServletJSONProcessor implements JSONProcessor {
 
 	public static final String MDC_REQUEST
-			= ServletRequestProcessor.class.getName() + ".httpServletRequest";
-
+			= ServletJSONProcessor.class.getName() + ".httpServletRequest";
 	private static final String HTTP_INTERFACE = "sentry.interfaces.Http";
 
 	@Override
@@ -51,12 +49,12 @@ public class ServletRequestProcessor implements RequestProcessor {
 	}
 
 	private String getUrl(HttpServletRequest request) {
-		try {
-			return new URL(request.getScheme(), request.getServerName(),
-				request.getServerPort(), request.getRequestURI()).toString();
-		} catch (MalformedURLException exception) {
-			return null;
+		StringBuffer sb = request.getRequestURL();
+		String query = request.getQueryString();
+		if (query != null) {
+			sb.append("?").append(query);
 		}
+		return sb.toString();
 	}
 
 	@SuppressWarnings("unchecked")

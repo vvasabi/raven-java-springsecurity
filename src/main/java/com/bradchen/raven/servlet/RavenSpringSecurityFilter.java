@@ -14,6 +14,12 @@ import net.kencochrane.raven.spi.RavenMDC;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+/**
+ * Store Spring Security's SecurityContext in RavenMDC, allowing
+ * {@link SpringSecurityJSONProcessor} to access it.
+ *
+ * @author vvasabi
+ */
 public class RavenSpringSecurityFilter implements Filter {
 
 	@Override
@@ -26,9 +32,12 @@ public class RavenSpringSecurityFilter implements Filter {
 			FilterChain chain) throws IOException, ServletException {
 		SecurityContext context = SecurityContextHolder.getContext();
 		RavenMDC mdc = RavenMDC.getInstance();
-		mdc.put(SpringSecurityRequestProcessor.MDC_SECURITY_CONTEXT, context);
-		chain.doFilter(request, response);
-		mdc.remove(SpringSecurityRequestProcessor.MDC_SECURITY_CONTEXT);
+		mdc.put(SpringSecurityJSONProcessor.MDC_SECURITY_CONTEXT, context);
+		try {
+			chain.doFilter(request, response);
+		} finally {
+			mdc.remove(SpringSecurityJSONProcessor.MDC_SECURITY_CONTEXT);
+		}
 	}
 
 	@Override
