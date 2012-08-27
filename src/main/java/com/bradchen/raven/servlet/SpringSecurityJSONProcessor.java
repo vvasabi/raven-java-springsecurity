@@ -18,22 +18,17 @@ import net.kencochrane.raven.spi.JSONProcessor;
  */
 public class SpringSecurityJSONProcessor implements JSONProcessor {
 
-	public static final String MDC_SECURITY_CONTEXT
-			= SpringSecurityJSONProcessor.class.getName() + ".securityContext";
-
 	private static final String USER_INTERFACE = "sentry.interfaces.User";
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public void process(JSONObject json) {
-		RavenMDC mdc = RavenMDC.getInstance();
-		SecurityContext context = (SecurityContext)mdc.get(MDC_SECURITY_CONTEXT);
+	public void prepareDiagnosticContext(Throwable exception) {
+		SecurityContext context = RavenSpringSecurityFilter.getSecurityContext();
 		if ((context == null) || (context.getAuthentication() == null)) {
 			// no security context available; do nothing
 			return;
 		}
 
-		json.put(USER_INTERFACE, buildUserObject(context));
+		RavenMDC.getInstance().put(USER_INTERFACE, buildUserObject(context));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -71,6 +66,15 @@ public class SpringSecurityJSONProcessor implements JSONProcessor {
 		user.put("authorities", authorities);
 
 		return user;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public void process(JSONObject json) {
+		JSONObject user = (JSONObject)RavenMDC.getInstance().get(USER_INTERFACE);
+		if (user != null) {
+			json.put(USER_INTERFACE, user);
+		}
 	}
 
 }

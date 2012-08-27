@@ -9,8 +9,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import net.kencochrane.raven.spi.RavenMDC;
-
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -22,6 +20,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 public class RavenSpringSecurityFilter implements Filter {
 
+	private static final ThreadLocal<SecurityContext> THREAD_SECURITY_CONTEXT
+			= new ThreadLocal<SecurityContext>();
+
+	public static SecurityContext getSecurityContext() {
+		return THREAD_SECURITY_CONTEXT.get();
+	}
+
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
 		// NOOP
@@ -30,13 +35,11 @@ public class RavenSpringSecurityFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response,
 			FilterChain chain) throws IOException, ServletException {
-		SecurityContext context = SecurityContextHolder.getContext();
-		RavenMDC mdc = RavenMDC.getInstance();
-		mdc.put(SpringSecurityJSONProcessor.MDC_SECURITY_CONTEXT, context);
+		THREAD_SECURITY_CONTEXT.set(SecurityContextHolder.getContext());
 		try {
 			chain.doFilter(request, response);
 		} finally {
-			mdc.remove(SpringSecurityJSONProcessor.MDC_SECURITY_CONTEXT);
+			THREAD_SECURITY_CONTEXT.remove();
 		}
 	}
 
