@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONObject;
 
 import net.kencochrane.raven.spi.JSONProcessor;
@@ -77,7 +78,7 @@ public class ServletJSONProcessor implements JSONProcessor {
 		Enumeration<String> headersEnum = request.getHeaderNames();
 		while (headersEnum.hasMoreElements()) {
 			String name = headersEnum.nextElement();
-			headers.put(name, request.getHeader(name));
+			headers.put(capitalize(name), request.getHeader(name));
 		}
 		return headers;
 	}
@@ -90,6 +91,22 @@ public class ServletJSONProcessor implements JSONProcessor {
 		env.put("SERVER_PORT", request.getServerPort());
 		env.put("SERVER_PROTOCOL", request.getProtocol());
 		return env;
+	}
+
+	/**
+	 * Capitalize the first letter of each part of a header name. This is
+	 * necessary because Sentry currently expects header names to be formatted
+	 * this way.
+	 *
+	 * @param headerName header name to capitalize
+	 * @return capitalized header name
+	 */
+	private static String capitalize(String headerName) {
+		String[] tokens = headerName.split("-");
+		for (int i = 0; i < tokens.length; i ++) {
+			tokens[i] = StringUtils.capitalize(tokens[i]);
+		}
+		return StringUtils.join(tokens, "-");
 	}
 
 }
