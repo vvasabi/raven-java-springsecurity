@@ -21,7 +21,7 @@ public class SpringSecurityJSONProcessor implements JSONProcessor {
 	private static final String USER_INTERFACE = "sentry.interfaces.User";
 
 	@Override
-	public void prepareDiagnosticContext(Throwable exception) {
+	public void prepareDiagnosticContext() {
 		SecurityContext context = RavenSpringSecurityFilter.getSecurityContext();
 		if ((context == null) || (context.getAuthentication() == null)) {
 			// no security context available; do nothing
@@ -70,7 +70,7 @@ public class SpringSecurityJSONProcessor implements JSONProcessor {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void process(JSONObject json) {
+	public void process(JSONObject json, Throwable exception) {
 		JSONObject user = (JSONObject)RavenMDC.getInstance().get(USER_INTERFACE);
 		if (user != null) {
 			json.put(USER_INTERFACE, user);
