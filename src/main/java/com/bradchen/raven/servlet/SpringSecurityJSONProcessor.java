@@ -69,6 +69,11 @@ public class SpringSecurityJSONProcessor implements JSONProcessor {
 	}
 
 	@Override
+	public void clearDiagnosticContext() {
+		RavenMDC.getInstance().remove(USER_INTERFACE);
+	}
+
+	@Override
 	@SuppressWarnings("unchecked")
 	public void process(JSONObject json, Throwable exception) {
 		JSONObject user = (JSONObject)RavenMDC.getInstance().get(USER_INTERFACE);
