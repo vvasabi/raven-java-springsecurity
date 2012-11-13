@@ -1,4 +1,4 @@
-package com.bradchen.raven.servlet;
+package com.bradchen.raven.springsecurity;
 
 import java.io.IOException;
 
@@ -14,7 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Store Spring Security's SecurityContext in RavenMDC, allowing
- * {@link SpringSecurityJSONProcessor} to access it.
+ * {@link AbstractSpringSecurityJSONProcessor} to access it.
  *
  * @author vvasabi
  */
